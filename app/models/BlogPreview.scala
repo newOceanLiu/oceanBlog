@@ -1,15 +1,15 @@
 package models
 
 case class BlogPreview(
-  title: String,
-  created: Long,
-  lastModified: Long,
-  viewCount: Int,
-  commentCount: Int,
-  preview: String,
-  tag: List[String],
-  vote: Int,
+  title: Option[String],
+  created: Option[Long],
+  lastModified: Option[Long],
+  viewCount: Option[Int],
+  commentCount: Option[Int],
+  preview: Option[String],
+  tag: Option[List[String]],
+  vote: Option[Int],
   id: Long,
-  permission: Int
+  permission: Option[Int]
 )
 
