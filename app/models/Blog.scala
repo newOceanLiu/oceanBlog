@@ -1,15 +1,15 @@
 package models
 
 case class Blog(
-  title: String,
-  created: Long,
-  lastModified: Long,
-  viewCount: Int,
-  commentCount: Int,
-  content: String,
-  tag: List[String],
-  vote: Int,
+  title: Option[String],
+  created: Option[Long],
+  lastModified: Option[Long],
+  viewCount: Option[Int],
+  commentCount: Option[Int],
+  content: Option[String],
+  tag: Option[List[String]],
+  vote: Option[Int],
   id: Long,
-  permission: Int
+  permission: Option[Int]
 )
 

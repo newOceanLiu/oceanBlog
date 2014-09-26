@@ -3,6 +3,8 @@ package controllers
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
+import reactivemongo.api.collections.default.BSONCollection
+import reactivemongo.bson.BSONDocument
 import scala.concurrent.Future
 
 // Reactive Mongo imports
@@ -13,6 +15,8 @@ import play.modules.reactivemongo.MongoController
 import play.modules.reactivemongo.json.collection.JSONCollection
 import models._
 import models.JsonFormats._
+import scala.util.{ Failure, Success }
+
 
 
 object Blog extends Controller with MongoController{
@@ -29,13 +33,14 @@ object Blog extends Controller with MongoController{
 
   // todo: auto generated ID
   // todo: add option so not every field is necessary
+  // todo: hookup with preview to reflect change, same for delete and update
   def create = Action.async(parse.json) { request =>
     def collection: JSONCollection = db.collection[JSONCollection]("blog")
-    request.body.validate[Blog].map { user =>
-      // `user` is an instance of the case class `models.User`
-      collection.insert(user).map { lastError =>
+    request.body.validate[Blog].map { blog =>
+      // `user` is an instance of the case class `models.User
+      collection.insert(blog).map { lastError =>
         print(s"Successfully inserted with LastError: $lastError")
-        Ok("this blog is created!")
+        Ok("This blog is created!")
       }
     }.getOrElse(Future.successful(BadRequest("invalid json")))
   }
@@ -47,5 +52,31 @@ object Blog extends Controller with MongoController{
     blogs.map { blog =>
       Ok(Json.toJson(blog))
     }
+  }
+
+  def remove(blogId: Long) = Action.async{
+    def collection: JSONCollection = db.collection[JSONCollection]("blog")
+    val selector = Json.obj("id" -> blogId)
+    collection.remove(selector) map{_ =>
+      Ok("This blog is deleted!")
+    } recover {
+      case e =>
+        InternalServerError("Failed to delete this blog!")
+    }
+  }
+
+  // todo: need to handle the case where blog is not found: should not return success
+  def update(blogId: Long) = Action.async(parse.json) { request =>
+    def collection: JSONCollection = db.collection[JSONCollection]("blog")
+    request.body.validate[Blog].map { blog =>
+      val selector = Json.obj("id" -> blogId)
+      val modifier = Json.obj("$set" -> blog)
+      collection.update(selector, modifier).map { _=>
+        Ok("This blog is updated!")
+      } recover {
+        case e =>
+          InternalServerError("Failed to update this blog!")
+      }
+    }.getOrElse(Future.successful(BadRequest("invalid json")))
   }
 }
